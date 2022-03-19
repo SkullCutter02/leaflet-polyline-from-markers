@@ -12,7 +12,7 @@ interface Props {
 const LocationMarker: React.FC<Props> = ({ setMarkers, markers }) => {
   const map = useMapEvents({
     click(e) {
-      if (markers.length < 7) {
+      if (markers.length < 15) {
         setMarkers((prev) => [...prev, e.latlng]);
       }
     },
