@@ -9,7 +9,7 @@ interface Props {
   setMarkers: Dispatch<SetStateAction<LatLng[]>>;
 }
 
-const LocationMarker: React.FC<Props> = ({ setMarkers, markers }) => {
+const Markers: React.FC<Props> = ({ setMarkers, markers }) => {
   const map = useMapEvents({
     click(e) {
       if (markers.length < 15) {
@@ -35,4 +35,4 @@ const LocationMarker: React.FC<Props> = ({ setMarkers, markers }) => {
   );
 };
 
-export default LocationMarker;
+export default Markers;

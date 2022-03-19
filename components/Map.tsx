@@ -3,7 +3,7 @@ import { MapContainer, Polyline, TileLayer } from "react-leaflet";
 import L from "leaflet";
 
 import osm from "../config/osm-providers";
-import LocationMarker from "./LocationMarker";
+import Markers from "./Markers";
 import ORS_KEY from "../config/orsKey";
 
 const ZOOM_LEVEL = 17;
@@ -55,7 +55,7 @@ const LeafletMap: React.FC = () => {
           />
 
           {!disableMarkers && (
-            <LocationMarker markers={markers} setMarkers={setMarkers} />
+            <Markers markers={markers} setMarkers={setMarkers} />
           )}
 
           {polyline &&
