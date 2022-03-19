@@ -1,8 +1,7 @@
-import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { Marker, Popup, useMapEvents } from "react-leaflet";
+import React, { Dispatch, SetStateAction } from "react";
+import { useMapEvents } from "react-leaflet";
 import { LatLng } from "leaflet";
 
-import markerIcon from "../config/markerIcon";
 import MarkerWithRef from "./MarkerWithRef";
 
 interface Props {
@@ -13,7 +12,9 @@ interface Props {
 const LocationMarker: React.FC<Props> = ({ setMarkers, markers }) => {
   const map = useMapEvents({
     click(e) {
-      setMarkers((prev) => [...prev, e.latlng]);
+      if (markers.length < 7) {
+        setMarkers((prev) => [...prev, e.latlng]);
+      }
     },
     locationfound(e) {
       map.flyTo(e.latlng, map.getZoom(), { animate: true });
@@ -23,7 +24,12 @@ const LocationMarker: React.FC<Props> = ({ setMarkers, markers }) => {
   return (
     <>
       {markers.map((marker, i) => (
-        <MarkerWithRef i={i} marker={marker} setMarkers={setMarkers} />
+        <MarkerWithRef
+          key={"marker_" + i}
+          i={i}
+          marker={marker}
+          setMarkers={setMarkers}
+        />
       ))}
     </>
   );

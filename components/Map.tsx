@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, Polyline, TileLayer } from "react-leaflet";
-import L, { LatLngExpression } from "leaflet";
+import L from "leaflet";
 
 import osm from "../config/osm-providers";
 import LocationMarker from "./LocationMarker";
 import ORS_KEY from "../config/orsKey";
 
-const ZOOM_LEVEL = 15;
+const ZOOM_LEVEL = 17;
 
 // const polyline: LatLngExpression[] | LatLngExpression[][] = [
 //   [22.427509, 114.205905],
@@ -14,57 +14,64 @@ const ZOOM_LEVEL = 15;
 // ];
 
 const LeafletMap: React.FC = () => {
-  const [map, setMap] = useState<L.Map>(null);
-  const [center, setCenter] = useState({
+  const [center] = useState({
     lat: 22.427509,
     lng: 114.205905,
   });
   const [markers, setMarkers] = useState<L.LatLng[]>([]);
-  const [polyline, setPolyline] = useState<[number, number][]>(null);
+  const [polyline, setPolyline] = useState<[number, number][][]>([]);
+  const [disableMarkers, setDisableMarkers] = useState<boolean>(false);
 
-  const getPath = async () => {
+  const getPath = async (pos1: number, pos2: number) => {
     const res = await fetch(
-      `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=${ORS_KEY}&start=${markers[0].lng},${markers[0].lat}&end=${markers[1].lng},${markers[1].lat}`
+      `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=${ORS_KEY}&start=${markers[pos1].lng},${markers[pos1].lat}&end=${markers[pos2].lng},${markers[pos2].lat}`
     );
     return res.json();
   };
 
   useEffect(() => {
-    if (markers.length >= 2) {
-      getPath().then((path) => {
-        const polylines = path.features[0].geometry.coordinates.map(
-          (latlngs) => [latlngs[1], latlngs[0]]
-        );
+    setPolyline([]);
 
-        setPolyline(polylines);
-      });
+    if (markers.length >= 2) {
+      for (let i = 0; i < markers.length - 1; i++) {
+        getPath(i, i + 1).then((path) => {
+          const polylines = path.features[0].geometry.coordinates.map(
+            (latlngs) => [latlngs[1], latlngs[0]]
+          );
+
+          setPolyline((prev) => [...prev, polylines]);
+        });
+      }
     }
   }, [markers]);
 
   return (
     <>
       <div>
-        <MapContainer center={center} zoom={ZOOM_LEVEL} whenCreated={setMap}>
+        <MapContainer center={center} zoom={ZOOM_LEVEL}>
           <TileLayer
             url={osm.maptiler.url}
             attribution={osm.maptiler.attribution}
           />
 
-          <LocationMarker markers={markers} setMarkers={setMarkers} />
+          {!disableMarkers && (
+            <LocationMarker markers={markers} setMarkers={setMarkers} />
+          )}
 
           {polyline &&
-            polyline.map((latlng) => (
+            polyline.map((_, i) => (
               <Polyline
-                key={`${latlng[0]}-${latlng[1]}`}
+                key={`polyline-${i}`}
                 color={"red"}
                 positions={polyline}
               />
             ))}
-
-          {/*<Polyline pathOptions={{ fillColor: "red" }} positions={polyline} />*/}
         </MapContainer>
         <button onClick={() => setMarkers((prev) => prev.slice(0, -1))}>
           Remove last marker
+        </button>
+        <button onClick={() => setDisableMarkers((prev) => !prev)}>
+          Toggle markers
         </button>
       </div>
 
